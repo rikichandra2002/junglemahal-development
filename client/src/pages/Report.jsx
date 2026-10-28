@@ -6,7 +6,6 @@ import {
   Camera,
   CheckCircle2,
   Factory,
-  Heart,
   Leaf,
   MapPin,
   PawPrint,
@@ -16,8 +15,9 @@ import {
   Trees,
   Droplets,
 } from "lucide-react";
+import { API_URL } from "../config/api";
 
-const API_URL = "http://localhost:5000/api/reports";
+const REPORTS_API_URL = `${API_URL}/api/reports`;
 
 const categories = [
   { label: "Deforestation", icon: Trees },
@@ -89,6 +89,7 @@ export default function Report() {
 
     setPhoto(null);
     setPhotoName("");
+
     setErrors((previous) => ({
       ...previous,
       photo: "",
@@ -171,14 +172,12 @@ export default function Report() {
     const nextErrors = validateForm();
     setErrors(nextErrors);
 
-    if (Object.keys(nextErrors).length > 0) {
-      return;
-    }
+    if (Object.keys(nextErrors).length > 0) return;
 
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetch(REPORTS_API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -205,7 +204,7 @@ export default function Report() {
     } catch (error) {
       if (error instanceof TypeError) {
         setServerError(
-          "Cannot connect to the backend. Make sure the server is running on port 5000."
+          "Cannot connect to the backend. Check the deployed API URL, CORS settings, and server status."
         );
       } else {
         setServerError(error.message || "Something went wrong.");
@@ -224,7 +223,6 @@ export default function Report() {
     setSubmittedReport(null);
   }
 
-  // Success screen
   if (submittedReport) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#f7f8f3] px-5 py-16">
@@ -265,9 +263,9 @@ export default function Report() {
               {submittedReport.location || form.location}
             </p>
 
-            {submittedReport.id && (
+            {(submittedReport.id || submittedReport._id) && (
               <p className="mt-3 break-all text-xs text-[#687669]">
-                Report ID: {submittedReport.id}
+                Report ID: {submittedReport.id || submittedReport._id}
               </p>
             )}
 
@@ -297,7 +295,6 @@ export default function Report() {
 
   return (
     <main className="min-h-screen bg-[#f7f8f3]">
-      {/* Header */}
       <header className="border-b border-[#e5e9df] bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-10">
           <a href="/" className="flex items-center gap-3">
@@ -309,7 +306,6 @@ export default function Report() {
               <span className="block text-lg font-bold text-[#244d36]">
                 Jungle<span className="text-[#8a9d58]">Mahal</span>
               </span>
-
               <span className="block text-[10px] font-semibold uppercase tracking-[2px] text-[#788476]">
                 Nature · People · Progress
               </span>
@@ -327,7 +323,6 @@ export default function Report() {
       </header>
 
       <section className="mx-auto grid max-w-7xl gap-10 px-5 py-12 lg:grid-cols-[0.75fr_1.25fr] lg:gap-16 lg:px-10 lg:py-16">
-        {/* Introduction */}
         <aside>
           <span className="inline-flex items-center gap-2 rounded-full bg-[#e5eddf] px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#345c3e]">
             <Leaf size={14} />
@@ -353,7 +348,6 @@ export default function Report() {
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#e4efdf] text-[#345c3e]">
                 <MapPin size={21} />
               </span>
-
               <div>
                 <h2 className="font-semibold text-[#244532]">
                   Describe the location
@@ -368,7 +362,6 @@ export default function Report() {
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#e4efdf] text-[#345c3e]">
                 <Camera size={21} />
               </span>
-
               <div>
                 <h2 className="font-semibold text-[#244532]">
                   Add supporting evidence
@@ -384,7 +377,6 @@ export default function Report() {
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#e4efdf] text-[#345c3e]">
                 <ShieldCheck size={21} />
               </span>
-
               <div>
                 <h2 className="font-semibold text-[#244532]">
                   Responsible reporting
@@ -401,7 +393,6 @@ export default function Report() {
             <p className="text-sm font-semibold text-[#244532]">
               Please note
             </p>
-
             <p className="mt-2 text-sm leading-6 text-[#758175]">
               This website is an environmental awareness project, not an
               official government complaint portal.
@@ -409,24 +400,20 @@ export default function Report() {
           </div>
         </aside>
 
-        {/* Report form */}
         <section className="rounded-3xl border border-[#e4e9df] bg-white p-6 shadow-sm sm:p-9">
           <div className="mb-8">
             <p className="text-xs font-bold uppercase tracking-[2px] text-[#84945d]">
               ENVIRONMENTAL REPORT
             </p>
-
             <h2 className="mt-3 text-2xl font-semibold text-[#244532]">
               Tell us what you observed
             </h2>
-
             <p className="mt-2 text-sm leading-6 text-[#758175]">
               Fields marked with * are required.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} noValidate className="space-y-6">
-            {/* Title */}
             <div>
               <label
                 htmlFor="title"
@@ -434,7 +421,6 @@ export default function Report() {
               >
                 Report title *
               </label>
-
               <input
                 id="title"
                 name="title"
@@ -447,20 +433,15 @@ export default function Report() {
                 aria-invalid={Boolean(errors.title)}
                 className="w-full rounded-xl border border-[#dfe5da] bg-[#fcfdf9] px-4 py-3.5 text-sm outline-none transition focus:border-[#6f936c] focus:ring-2 focus:ring-[#dce9d7]"
               />
-
               {errors.title && (
-                <p className="mt-2 text-sm text-red-600">
-                  {errors.title}
-                </p>
+                <p className="mt-2 text-sm text-red-600">{errors.title}</p>
               )}
             </div>
 
-            {/* Categories */}
             <fieldset>
               <legend className="mb-3 text-sm font-semibold text-[#405446]">
                 Issue category *
               </legend>
-
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {categories.map((category) => {
                   const Icon = category.icon;
@@ -484,7 +465,6 @@ export default function Report() {
                   );
                 })}
               </div>
-
               {errors.category && (
                 <p className="mt-2 text-sm text-red-600">
                   {errors.category}
@@ -492,7 +472,6 @@ export default function Report() {
               )}
             </fieldset>
 
-            {/* District */}
             <div>
               <label
                 htmlFor="district"
@@ -500,7 +479,6 @@ export default function Report() {
               >
                 District *
               </label>
-
               <select
                 id="district"
                 name="district"
@@ -517,7 +495,6 @@ export default function Report() {
                   </option>
                 ))}
               </select>
-
               {errors.district && (
                 <p className="mt-2 text-sm text-red-600">
                   {errors.district}
@@ -525,7 +502,6 @@ export default function Report() {
               )}
             </div>
 
-            {/* Location */}
             <div>
               <label
                 htmlFor="location"
@@ -533,7 +509,6 @@ export default function Report() {
               >
                 Specific location *
               </label>
-
               <input
                 id="location"
                 name="location"
@@ -546,7 +521,6 @@ export default function Report() {
                 aria-invalid={Boolean(errors.location)}
                 className="w-full rounded-xl border border-[#dfe5da] bg-[#fcfdf9] px-4 py-3.5 text-sm outline-none focus:border-[#6f936c] focus:ring-2 focus:ring-[#dce9d7]"
               />
-
               {errors.location && (
                 <p className="mt-2 text-sm text-red-600">
                   {errors.location}
@@ -554,7 +528,6 @@ export default function Report() {
               )}
             </div>
 
-            {/* Description */}
             <div>
               <label
                 htmlFor="description"
@@ -562,7 +535,6 @@ export default function Report() {
               >
                 Description *
               </label>
-
               <textarea
                 id="description"
                 name="description"
@@ -576,7 +548,6 @@ export default function Report() {
                 aria-invalid={Boolean(errors.description)}
                 className="w-full resize-y rounded-xl border border-[#dfe5da] bg-[#fcfdf9] px-4 py-3.5 text-sm leading-6 outline-none focus:border-[#6f936c] focus:ring-2 focus:ring-[#dce9d7]"
               />
-
               <div className="mt-2 flex justify-between gap-3">
                 {errors.description ? (
                   <p className="text-sm text-red-600">
@@ -587,14 +558,12 @@ export default function Report() {
                     Provide at least 20 characters.
                   </p>
                 )}
-
                 <p className="shrink-0 text-xs text-[#849084]">
                   {form.description.length}/2000
                 </p>
               </div>
             </div>
 
-            {/* Photograph */}
             <div>
               <label
                 htmlFor="photo"
@@ -602,21 +571,17 @@ export default function Report() {
               >
                 Supporting photograph (optional)
               </label>
-
               <label
                 htmlFor="photo"
                 className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-[#b9c9af] bg-[#fafcf8] px-5 py-7 text-center transition hover:bg-[#f0f5eb]"
               >
                 <Camera size={26} className="text-[#63835c]" />
-
                 <span className="mt-3 break-all text-sm font-semibold text-[#405446]">
                   {photoName || "Choose a photograph"}
                 </span>
-
                 <span className="mt-1 text-xs text-[#849084]">
                   Images only · Maximum 5 MB
                 </span>
-
                 <input
                   id="photo"
                   type="file"
@@ -625,21 +590,16 @@ export default function Report() {
                   className="sr-only"
                 />
               </label>
-
               {photo && (
                 <p className="mt-2 text-xs text-[#63835c]">
                   Image selected. Upload support will be connected separately.
                 </p>
               )}
-
               {errors.photo && (
-                <p className="mt-2 text-sm text-red-600">
-                  {errors.photo}
-                </p>
+                <p className="mt-2 text-sm text-red-600">{errors.photo}</p>
               )}
             </div>
 
-            {/* Email */}
             <div>
               <label
                 htmlFor="email"
@@ -647,7 +607,6 @@ export default function Report() {
               >
                 Contact email (optional)
               </label>
-
               <input
                 id="email"
                 name="email"
@@ -659,15 +618,11 @@ export default function Report() {
                 aria-invalid={Boolean(errors.email)}
                 className="w-full rounded-xl border border-[#dfe5da] bg-[#fcfdf9] px-4 py-3.5 text-sm outline-none focus:border-[#6f936c] focus:ring-2 focus:ring-[#dce9d7]"
               />
-
               {errors.email && (
-                <p className="mt-2 text-sm text-red-600">
-                  {errors.email}
-                </p>
+                <p className="mt-2 text-sm text-red-600">{errors.email}</p>
               )}
             </div>
 
-            {/* Server error */}
             {serverError && (
               <div
                 role="alert"
@@ -677,7 +632,6 @@ export default function Report() {
               </div>
             )}
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={isSubmitting}
@@ -702,17 +656,14 @@ export default function Report() {
         </section>
       </section>
 
-      {/* Footer */}
       <footer className="bg-[#173b2b] px-5 py-8 text-white">
         <div className="mx-auto flex max-w-7xl flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <a href="/" className="font-bold">
             Jungle<span className="text-[#c7db9b]">Mahal</span>
           </a>
-
           <p className="text-xs leading-5 text-white/60">
             Environmental awareness · Community development
           </p>
-
           <a
             href="/"
             className="inline-flex items-center gap-2 text-sm font-medium text-[#c7db9b] hover:text-white"
