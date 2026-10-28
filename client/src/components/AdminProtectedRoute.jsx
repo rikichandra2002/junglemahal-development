@@ -2,46 +2,45 @@
 import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import axios from "axios";
-import { Leaf } from "lucide-react";
+import { API_URL } from "../config/api";
 
-const API_URL = "http://localhost:5000/api/admin";
+const ADMIN_API_URL = `${API_URL}/api/admin`;
 
 export default function AdminProtectedRoute() {
-  const [authenticated, setAuthenticated] = useState(false);
+  const [authorized, setAuthorized] = useState(false);
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    let active = true;
+    let cancelled = false;
 
-    axios
-      .get(`${API_URL}/me`, { withCredentials: true })
-      .then((response) => {
-        if (active && response.data.success) {
-          setAuthenticated(true);
-        }
-      })
-      .catch(() => {
-        if (active) setAuthenticated(false);
-      })
-      .finally(() => {
-        if (active) setChecking(false);
-      });
+    async function checkAdmin() {
+      try {
+        await axios.get(`${ADMIN_API_URL}/me`, {
+          withCredentials: true,
+        });
+
+        if (!cancelled) setAuthorized(true);
+      } catch (error) {
+        if (!cancelled) setAuthorized(false);
+        console.error(
+          "Admin authentication check failed:",
+          error.response?.status || error.message
+        );
+      } finally {
+        if (!cancelled) setChecking(false);
+      }
+    }
+
+    checkAdmin();
 
     return () => {
-      active = false;
+      cancelled = true;
     };
   }, []);
 
   if (checking) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#f5f7f0]">
-        <div className="text-center">
-          <Leaf className="mx-auto mb-3 animate-pulse text-[#276749]" size={36} />
-          <p className="text-sm text-gray-600">Verifying admin session...</p>
-        </div>
-      </div>
-    );
+    return <div className="p-8 text-center">Checking admin access...</div>;
   }
 
-  return authenticated ? <Outlet /> : <Navigate to="/admin-login" replace />;
+  return authorized ? <Outlet /> : <Navigate to="/admin-login" replace />;
 }
