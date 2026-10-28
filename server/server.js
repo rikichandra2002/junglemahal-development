@@ -11,7 +11,6 @@ import adminRoutes from "./routes/adminRoutes.js";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
 const allowedOrigins = [
   "http://localhost:5173",
@@ -22,8 +21,6 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests without an Origin header, such as server-side
-      // health checks, and allow explicitly configured frontend origins.
       if (!origin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
@@ -38,6 +35,38 @@ app.use(
 
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
+
+// Connect to MongoDB when a request arrives.
+// Reuse an existing connection when possible.
+async function connectToDatabase() {
+  if (!process.env.MONGODB_URI) {
+    throw new Error("MONGODB_URI is missing");
+  }
+
+  if (mongoose.connection.readyState === 1) {
+    return;
+  }
+
+  if (mongoose.connection.readyState === 2) {
+    await mongoose.connection.asPromise();
+    return;
+  }
+
+  await mongoose.connect(process.env.MONGODB_URI, {
+    serverSelectionTimeoutMS: 10000,
+  });
+}
+
+// Ensure the database is available before processing requests.
+app.use(async (req, res, next) => {
+  try {
+    await connectToDatabase();
+    next();
+  } catch (error) {
+    console.error("MongoDB connection failed:", error.message);
+    next(error);
+  }
+});
 
 // Root route
 app.get("/", (req, res) => {
@@ -92,26 +121,5 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server after connecting to MongoDB
-async function startServer() {
-  try {
-    if (!process.env.MONGODB_URI) {
-      throw new Error("MONGODB_URI is missing");
-    }
-
-    await mongoose.connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 10000,
-    });
-
-    console.log("MongoDB connected successfully");
-
-    app.listen(PORT, "0.0.0.0", () => {
-      console.log(`JungleMahal API listening on port ${PORT}`);
-    });
-  } catch (error) {
-    console.error("Failed to start the server:", error.message);
-    process.exit(1);
-  }
-}
-
-startServer();
+// Vercel handles the HTTP server; do not call app.listen().
+export default app;
