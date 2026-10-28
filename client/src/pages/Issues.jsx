@@ -17,8 +17,9 @@ import {
   CalendarDays,
   Plus,
 } from "lucide-react";
+import { API_URL } from "../config/api";
 
-const API_URL = "http://localhost:5000/api/reports";
+const REPORTS_API_URL = `${API_URL}/api/reports`;
 
 const categories = [
   "Deforestation",
@@ -77,7 +78,9 @@ function ReportCard({ report }) {
         </span>
 
         <span
-          className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${statusStyles[status]}`}
+          className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
+            statusStyles[status]
+          }`}
         >
           {status}
         </span>
@@ -97,7 +100,10 @@ function ReportCard({ report }) {
 
       <div className="mt-6 space-y-3 border-t border-[#edf0e9] pt-5">
         <p className="flex items-start gap-2 text-sm text-[#536456]">
-          <MapPin size={17} className="mt-0.5 shrink-0 text-[#84945d]" />
+          <MapPin
+            size={17}
+            className="mt-0.5 shrink-0 text-[#84945d]"
+          />
           <span className="break-words">
             {report.location}, {report.district}
           </span>
@@ -125,7 +131,13 @@ export default function Issues() {
     setError("");
 
     try {
-      const response = await fetch(API_URL);
+      const response = await fetch(REPORTS_API_URL, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
       const data = await response.json();
 
       if (!response.ok || !data.success) {
@@ -136,7 +148,7 @@ export default function Issues() {
     } catch (err) {
       setError(
         err instanceof TypeError
-          ? "Cannot connect to the JungleMahal API. Make sure your backend is running."
+          ? "Cannot connect to the JungleMahal API. Check the backend URL, CORS settings, and server status."
           : err.message || "Something went wrong while loading reports."
       );
     } finally {
@@ -158,7 +170,9 @@ export default function Issues() {
         report.location,
         report.district,
         report.category,
-      ].some((value) => String(value || "").toLowerCase().includes(query));
+      ].some((value) =>
+        String(value || "").toLowerCase().includes(query)
+      );
 
       const matchesCategory =
         category === "All categories" || report.category === category;
@@ -169,6 +183,12 @@ export default function Issues() {
       return matchesSearch && matchesCategory && matchesStatus;
     });
   }, [reports, search, category, status]);
+
+  const resetFilters = () => {
+    setSearch("");
+    setCategory("All categories");
+    setStatus("All statuses");
+  };
 
   return (
     <main className="min-h-screen bg-[#f7f8f3]">
@@ -287,11 +307,7 @@ export default function Issues() {
 
             <button
               type="button"
-              onClick={() => {
-                setSearch("");
-                setCategory("All categories");
-                setStatus("All statuses");
-              }}
+              onClick={resetFilters}
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#dfe5da] bg-white px-4 py-3.5 text-sm font-semibold text-[#536456] transition hover:bg-[#edf1e8]"
             >
               <Filter size={17} />
@@ -303,7 +319,9 @@ export default function Issues() {
             <p className="text-sm text-[#758175]">
               {loading
                 ? "Loading reports..."
-                : `${filteredReports.length} report${filteredReports.length === 1 ? "" : "s"} found`}
+                : `${filteredReports.length} report${
+                    filteredReports.length === 1 ? "" : "s"
+                  } found`}
             </p>
 
             <button
@@ -312,7 +330,10 @@ export default function Issues() {
               disabled={loading}
               className="inline-flex items-center gap-2 text-sm font-semibold text-[#345c3e] hover:text-[#244532] disabled:opacity-50"
             >
-              <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
+              <RefreshCw
+                size={15}
+                className={loading ? "animate-spin" : ""}
+              />
               Refresh reports
             </button>
           </div>
@@ -344,7 +365,9 @@ export default function Issues() {
             <h3 className="mt-4 text-xl font-semibold text-[#244532]">
               We couldn't load the reports
             </h3>
-            <p className="mt-2 text-sm leading-6 text-[#758175]">{error}</p>
+            <p className="mt-2 text-sm leading-6 text-[#758175]">
+              {error}
+            </p>
             <button
               type="button"
               onClick={loadReports}
@@ -380,11 +403,7 @@ export default function Issues() {
 
             <button
               type="button"
-              onClick={() => {
-                setSearch("");
-                setCategory("All categories");
-                setStatus("All statuses");
-              }}
+              onClick={resetFilters}
               className="mt-5 inline-flex items-center gap-2 font-semibold text-[#345c3e] hover:text-[#244532]"
             >
               Clear filters <ArrowRight size={16} />

@@ -3,8 +3,9 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { Leaf, LockKeyhole, Mail, ArrowLeft } from "lucide-react";
+import { API_URL } from "../config/api";
 
-const API_URL = "http://localhost:5000/api/admin";
+const ADMIN_API_URL = `${API_URL}/api/admin`;
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -21,34 +22,34 @@ export default function AdminLogin() {
 
     try {
       const response = await axios.post(
-        `${API_URL}/login`,
+        `${ADMIN_API_URL}/login`,
         { email, password },
         { withCredentials: true }
       );
 
       if (response.data.success) {
         navigate("/admin", { replace: true });
+      } else {
+        setError(response.data.message || "Unable to sign in.");
       }
-    
-} catch (err) {
-  console.error("Admin login error:", err);
+    } catch (err) {
+      console.error("Admin login error:", err);
 
-  if (err.response) {
-    setError(
-      err.response.data?.message ||
-        `Login failed with status ${err.response.status}.`
-    );
-  } else if (err.request) {
-    setError(
-      "The server did not respond. Check the backend terminal and browser Console."
-    );
-  } else {
-    setError(err.message || "An unexpected login error occurred.");
-  }
-} finally {
-  setLoading(false);
-}
-
+      if (err.response) {
+        setError(
+          err.response.data?.message ||
+            `Login failed with status ${err.response.status}.`
+        );
+      } else if (err.request) {
+        setError(
+          "The server did not respond. Check the backend URL and connection."
+        );
+      } else {
+        setError(err.message || "An unexpected login error occurred.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -89,7 +90,6 @@ export default function AdminLogin() {
 
               <div className="flex items-center gap-3 rounded-xl border border-[#dce5d8] px-4 focus-within:border-[#276749]">
                 <Mail size={18} className="text-gray-400" />
-
                 <input
                   id="admin-email"
                   type="email"
@@ -113,7 +113,6 @@ export default function AdminLogin() {
 
               <div className="flex items-center gap-3 rounded-xl border border-[#dce5d8] px-4 focus-within:border-[#276749]">
                 <LockKeyhole size={18} className="text-gray-400" />
-
                 <input
                   id="admin-password"
                   type="password"

@@ -6,13 +6,15 @@ import { requireAdmin } from "../middlewares/adminAuth.js";
 
 const adminRouter = express.Router();
 
+
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax",
+  secure: true,
+  sameSite: "none",
   path: "/",
   maxAge: 8 * 60 * 60 * 1000,
 };
+
 
 adminRouter.post("/login", async (req, res) => {
   try {
@@ -84,11 +86,11 @@ adminRouter.get("/me", requireAdmin, (req, res) => {
 
 adminRouter.post("/logout", (req, res) => {
   res.clearCookie("adminToken", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-  });
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+  path: "/",
+});
 
   res.json({ success: true, message: "Logged out successfully." });
 });

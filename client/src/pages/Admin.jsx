@@ -14,9 +14,10 @@ import {
   ClipboardCheck,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { API_URL } from "../config/api";
 
-const API_URL = "http://localhost:5000/api/reports";
-const ADMIN_API_URL = "http://localhost:5000/api/admin";
+const REPORTS_API_URL = `${API_URL}/api/reports`;
+const ADMIN_API_URL = `${API_URL}/api/admin`;
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -29,13 +30,12 @@ const Admin = () => {
   const [actionError, setActionError] = useState("");
   const [loggingOut, setLoggingOut] = useState(false);
 
-  // Fetch all public report details for the admin dashboard.
   const fetchReports = async () => {
     try {
       setLoading(true);
       setError("");
 
-      const response = await axios.get(API_URL, {
+      const response = await axios.get(REPORTS_API_URL, {
         withCredentials: true,
       });
 
@@ -54,7 +54,6 @@ const Admin = () => {
     fetchReports();
   }, []);
 
-  // Update the report status in MongoDB through the protected API.
   const updateReportStatus = async (reportId, status) => {
     setUpdatingId(reportId);
     setActionMessage("");
@@ -62,7 +61,7 @@ const Admin = () => {
 
     try {
       const response = await axios.patch(
-        `${API_URL}/${reportId}/status`,
+        `${REPORTS_API_URL}/${reportId}/status`,
         { status },
         { withCredentials: true }
       );
@@ -94,7 +93,6 @@ const Admin = () => {
     }
   };
 
-  // Clear the authentication cookie and return to login.
   const handleLogout = async () => {
     setLoggingOut(true);
 
@@ -107,16 +105,13 @@ const Admin = () => {
     } catch (err) {
       console.error("Logout request failed:", err.message);
     } finally {
+      setLoggingOut(false);
       navigate("/admin-login", { replace: true });
     }
   };
 
   const stats = [
-    {
-      label: "Total Reports",
-      value: reports.length,
-      icon: FileText,
-    },
+    { label: "Total Reports", value: reports.length, icon: FileText },
     {
       label: "Pending",
       value: reports.filter((report) => report.status === "Pending").length,
@@ -124,8 +119,7 @@ const Admin = () => {
     },
     {
       label: "In Progress",
-      value: reports.filter((report) => report.status === "In Progress")
-        .length,
+      value: reports.filter((report) => report.status === "In Progress").length,
       icon: AlertCircle,
     },
     {
@@ -150,14 +144,12 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-[#f5f7f0] text-[#203b2c]">
-      {/* Header */}
       <header className="border-b border-[#dce5d8] bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-5 md:px-8">
           <Link to="/" className="flex items-center gap-3">
             <div className="rounded-xl bg-[#e5efe3] p-2.5 text-[#276749]">
               <Leaf size={24} />
             </div>
-
             <div>
               <h1 className="text-lg font-bold sm:text-xl">
                 Environment Monitor
@@ -211,23 +203,19 @@ const Admin = () => {
           Back to homepage
         </Link>
 
-        {/* Dashboard heading */}
         <div className="mb-8">
           <p className="mb-2 text-sm font-bold uppercase tracking-[0.18em] text-[#56805d]">
             Administration
           </p>
-
           <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
             Environmental Reports
           </h2>
-
           <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600 md:text-base">
             Review community-submitted environmental observations and manage
             their progress through the reporting workflow.
           </p>
         </div>
 
-        {/* Dashboard statistics */}
         <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {stats.map(({ label, value, icon: Icon }) => (
             <div
@@ -236,18 +224,15 @@ const Admin = () => {
             >
               <div className="mb-5 flex items-center justify-between">
                 <p className="text-sm font-medium text-gray-600">{label}</p>
-
                 <div className="rounded-xl bg-[#edf4e9] p-2.5 text-[#276749]">
                   <Icon size={20} />
                 </div>
               </div>
-
               <p className="text-3xl font-bold">{value}</p>
             </div>
           ))}
         </div>
 
-        {/* Status update feedback */}
         {actionMessage && (
           <div
             role="status"
@@ -263,7 +248,6 @@ const Admin = () => {
             className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
           >
             <p>{actionError}</p>
-
             {(actionError.includes("session") ||
               actionError.includes("sign in")) && (
               <button
@@ -277,7 +261,6 @@ const Admin = () => {
           </div>
         )}
 
-        {/* Reports section */}
         <section className="overflow-hidden rounded-2xl border border-[#e0e8dc] bg-white shadow-sm">
           <div className="flex flex-col justify-between gap-3 border-b border-[#e8eee5] p-5 sm:flex-row sm:items-center md:p-6">
             <div>
@@ -286,13 +269,11 @@ const Admin = () => {
                 Review reports and update their current status.
               </p>
             </div>
-
             <span className="w-fit rounded-full bg-[#edf4e9] px-3 py-1.5 text-xs font-semibold text-[#276749]">
               {reports.length} report{reports.length === 1 ? "" : "s"}
             </span>
           </div>
 
-          {/* Loading */}
           {loading ? (
             <div className="p-12 text-center">
               <RefreshCw
@@ -302,10 +283,8 @@ const Admin = () => {
               <p className="text-sm text-gray-500">Loading reports...</p>
             </div>
           ) : error ? (
-            /* Error */
             <div className="p-8 text-center">
               <p className="mb-4 text-sm text-red-600">{error}</p>
-
               <button
                 type="button"
                 onClick={fetchReports}
@@ -315,7 +294,6 @@ const Admin = () => {
               </button>
             </div>
           ) : reports.length === 0 ? (
-            /* Empty state */
             <div className="p-12 text-center">
               <FileText
                 className="mx-auto mb-3 text-gray-400"
@@ -333,64 +311,56 @@ const Admin = () => {
               </Link>
             </div>
           ) : (
-            /* Report cards */
             <div className="divide-y divide-[#edf1e9]">
               {reports.map((report) => (
                 <article
                   key={report._id}
                   className="p-5 transition hover:bg-[#fafcf8] md:p-6"
                 >
-                  <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
-                    <div className="min-w-0 flex-1">
-                      <div className="mb-3 flex flex-wrap items-center gap-2">
-                        <span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-semibold text-[#276749]">
-                          {report.category}
-                        </span>
+                  <div className="min-w-0">
+                    <div className="mb-3 flex flex-wrap items-center gap-2">
+                      <span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-semibold text-[#276749]">
+                        {report.category}
+                      </span>
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusStyle(
+                          report.status
+                        )}`}
+                      >
+                        {report.status}
+                      </span>
+                    </div>
 
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusStyle(
-                            report.status
-                          )}`}
-                        >
-                          {report.status}
-                        </span>
-                      </div>
+                    <h4 className="break-words text-lg font-bold">
+                      {report.title}
+                    </h4>
+                    <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-gray-600">
+                      {report.description}
+                    </p>
 
-                      <h4 className="break-words text-lg font-bold">
-                        {report.title}
-                      </h4>
-
-                      <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-gray-600">
-                        {report.description}
-                      </p>
-
-                      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-gray-500">
-                        <span className="inline-flex items-center gap-1.5">
-                          <MapPin size={14} />
-                          {report.location}, {report.district}
-                        </span>
-
-                        <span>
-                          {report.createdAt
-                            ? new Date(report.createdAt).toLocaleDateString(
-                                "en-IN",
-                                {
-                                  day: "2-digit",
-                                  month: "short",
-                                  year: "numeric",
-                                }
-                              )
-                            : "Date unavailable"}
-                        </span>
-
-                        <span className="font-mono">
-                          ID: {report._id?.slice(-8)}
-                        </span>
-                      </div>
+                    <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-gray-500">
+                      <span className="inline-flex items-center gap-1.5">
+                        <MapPin size={14} />
+                        {report.location}, {report.district}
+                      </span>
+                      <span>
+                        {report.createdAt
+                          ? new Date(report.createdAt).toLocaleDateString(
+                              "en-IN",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              }
+                            )
+                          : "Date unavailable"}
+                      </span>
+                      <span className="font-mono">
+                        ID: {report._id?.slice(-8)}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Admin report management */}
                   <div className="mt-5 flex flex-col gap-4 border-t border-[#edf1e9] pt-4 sm:flex-row sm:items-end sm:justify-between">
                     <div className="w-full sm:max-w-xs">
                       <label
@@ -400,16 +370,12 @@ const Admin = () => {
                         <ClipboardCheck size={17} />
                         Manage Report Status
                       </label>
-
                       <select
                         id={`status-${report._id}`}
                         value={report.status}
                         disabled={updatingId === report._id}
                         onChange={(event) =>
-                          updateReportStatus(
-                            report._id,
-                            event.target.value
-                          )
+                          updateReportStatus(report._id, event.target.value)
                         }
                         className="w-full rounded-xl border border-[#dce5d8] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#276749] focus:ring-2 focus:ring-[#276749]/10 disabled:cursor-wait disabled:opacity-60"
                       >
@@ -418,7 +384,6 @@ const Admin = () => {
                         <option value="In Progress">In Progress</option>
                         <option value="Resolved">Resolved / Completed</option>
                       </select>
-
                       <p className="mt-2 text-xs leading-5 text-gray-500">
                         Changes are saved to the database when the server
                         confirms the update.
@@ -439,7 +404,6 @@ const Admin = () => {
                       >
                         Verify
                       </button>
-
                       <button
                         type="button"
                         disabled={
@@ -453,7 +417,6 @@ const Admin = () => {
                       >
                         Start Work
                       </button>
-
                       <button
                         type="button"
                         disabled={
