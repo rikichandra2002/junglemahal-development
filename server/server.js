@@ -12,12 +12,14 @@ dotenv.config();
 
 const app = express();
 
+// Allowed frontend origins
 const allowedOrigins = [
   "http://localhost:5173",
+  "https://junglemahal-development.vercel.app",
   process.env.CLIENT_URL,
 ].filter(Boolean);
 
-// Middleware
+// CORS configuration
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -25,6 +27,7 @@ app.use(
         return callback(null, true);
       }
 
+      console.error("Blocked CORS origin:", origin);
       return callback(new Error("Origin not allowed by CORS"));
     },
     credentials: true,
@@ -36,8 +39,7 @@ app.use(
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
 
-// Connect to MongoDB when a request arrives.
-// Reuse an existing connection when possible.
+// Reuse MongoDB connection when available
 async function connectToDatabase() {
   if (!process.env.MONGODB_URI) {
     throw new Error("MONGODB_URI is missing");
@@ -57,7 +59,7 @@ async function connectToDatabase() {
   });
 }
 
-// Ensure the database is available before processing requests.
+// Ensure database connection before handling requests
 app.use(async (req, res, next) => {
   try {
     await connectToDatabase();
@@ -68,7 +70,7 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Root route
+// Root endpoint
 app.get("/", (req, res) => {
   res.json({
     success: true,
@@ -76,7 +78,7 @@ app.get("/", (req, res) => {
   });
 });
 
-// Health check
+// Health endpoint
 app.get("/api/health", (req, res) => {
   res.json({
     success: true,
@@ -92,7 +94,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/reports", reportRoutes);
 app.use("/api/admin", adminRoutes);
 
-// Handle unknown API routes
+// Handle unknown API endpoints
 app.use("/api", (req, res) => {
   res.status(404).json({
     success: false,
@@ -100,7 +102,7 @@ app.use("/api", (req, res) => {
   });
 });
 
-// Handle unexpected errors
+// Global error handler
 app.use((err, req, res, next) => {
   console.error("Server error:", err.message);
 
@@ -121,5 +123,5 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Vercel handles the HTTP server; do not call app.listen().
+// Vercel serverless deployment
 export default app;
