@@ -123,5 +123,13 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Vercel serverless deployment
+// Vercel serverless deployment + local development
+const PORT = process.env.PORT || 5000;
+
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => {
+    console.log(`JungleMahal API running at http://localhost:${PORT}`);
+  });
+}
+
 export default app;

@@ -17,12 +17,17 @@ import {
   LockKeyhole,
 } from "lucide-react";
 import { useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Link } from "react-router-dom";
 import Report from "./pages/Report.jsx";
 import Issues from "./pages/Issues.jsx";
 import Admin from "./pages/Admin.jsx";
 import AdminLogin from "./pages/AdminLogin.jsx";
 import AdminProtectedRoute from "./components/AdminProtectedRoute.jsx";
+import Initiatives from "./pages/Initiatives";
+import ForestConservation from "./pages/ForestConservation.jsx";
+import CommunityLandscape from "./pages/CommunityLandscape.jsx";
+import Donation from "./pages/Donation.jsx";
+
 
 const issues = [
   {
@@ -32,6 +37,8 @@ const issues = [
       "Protecting forest cover, wildlife habitats and the natural balance of our region.",
     icon: Trees,
     color: "bg-[#e3ead8]",
+    link: "/initiatives/forest-conservation",
+    external: false,
   },
   {
     number: "02",
@@ -40,6 +47,8 @@ const issues = [
       "Supporting water conservation, watershed restoration and sustainable water access.",
     icon: Droplets,
     color: "bg-[#dcebe8]",
+    link: "https://www.unwater.org/water-facts/water-scarcity",
+    external: true,
   },
   {
     number: "03",
@@ -48,6 +57,8 @@ const issues = [
       "Encouraging cleaner communities through responsible waste disposal and recycling.",
     icon: Recycle,
     color: "bg-[#eee6d5]",
+    link: "https://cpcb.nic.in/solid-waste-management-rules/",
+    external: true,
   },
 ];
 
@@ -210,12 +221,12 @@ function Hero() {
               Explore the Mission <ArrowRight size={18} />
             </a>
 
-            <a
-              href="#get-involved"
+            <Link
+              to="/donate"
               className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-white/70 bg-[#173B2B]/70 px-6 py-4 text-sm font-bold text-white shadow-sm transition-all duration-300 hover:border-[#CFE49A] hover:bg-[#CFE49A] hover:text-[#173B2B] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#CFE49A]"
             >
               Make a Difference <Heart size={18} />
-            </a>
+            </Link>
           </div>
 
           <div className="mt-12 flex items-center gap-3 text-sm text-white/85">
@@ -381,16 +392,31 @@ function EnvironmentalIssues() {
                   {issue.description}
                 </p>
 
-                <a
-                  href="#resources"
-                  className="mt-7 inline-flex items-center gap-2 text-sm font-bold text-[#244D36] transition hover:text-[#718A3D] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#718A3D]"
-                >
-                  Learn more
-                  <MoveUpRight
-                    size={16}
-                    className="transition group-hover:translate-x-1 group-hover:-translate-y-1"
-                  />
-                </a>
+                {issue.external ? (
+                  <a
+                    href={issue.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-7 inline-flex items-center gap-2 text-sm font-bold text-[#244D36] transition hover:text-[#718A3D] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#718A3D]"
+                  >
+                    Learn more
+                    <MoveUpRight
+                      size={16}
+                      className="transition group-hover:translate-x-1 group-hover:-translate-y-1"
+                    />
+                  </a>
+                ) : (
+                  <Link
+                    to={issue.link}
+                    className="mt-7 inline-flex items-center gap-2 text-sm font-bold text-[#244D36] transition hover:text-[#718A3D] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#718A3D]"
+                  >
+                    Learn more
+                    <MoveUpRight
+                      size={16}
+                      className="transition group-hover:translate-x-1 group-hover:-translate-y-1"
+                    />
+                  </Link>
+                )}
               </article>
             );
           })}
@@ -457,12 +483,39 @@ function Projects() {
                   {project.description}
                 </p>
 
-                <a
-                  href="#get-involved"
-                  className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#244D36] transition hover:text-[#718A3D] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#718A3D]"
-                >
-                  Discover the initiative <ArrowRight size={16} />
-                </a>
+                
+
+
+{project.category === "CULTURE & HERITAGE" ? (
+  <Link
+    to="/initiatives/culture-heritage"
+    className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#244D36] transition hover:text-[#718A3D]"
+  >
+    Discover the initiative <ArrowRight size={16} />
+  </Link>
+) : project.category === "FOREST CONSERVATION" ? (
+  <Link
+    to="/initiatives/forest-conservation"
+    className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#244D36] transition hover:text-[#718A3D]"
+  >
+    Discover the initiative <ArrowRight size={16} />
+  </Link>
+) : project.category === "COMMUNITY & LANDSCAPE" ? (
+  <Link
+    to="/community-landscape"
+    className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#244D36] transition hover:text-[#718A3D]"
+  >
+    Explore Tourist Places <ArrowRight size={16} />
+  </Link>
+) : (
+  <a
+    href="#get-involved"
+    className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#244D36] transition hover:text-[#718A3D]"
+  >
+    Discover the initiative <ArrowRight size={16} />
+  </a>
+)}
+
               </div>
             </article>
           ))}
@@ -592,11 +645,26 @@ export default function App() {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/report" element={<Report />} />
+      <Route path="/donate" element={<Donation />} />
       <Route path="/issues" element={<Issues />} />
       <Route path="/admin-login" element={<AdminLogin />} />
+      <Route
+  path="/initiatives/culture-heritage"
+  element={<Initiatives />}
+/>
+<Route
+  path="/initiatives/forest-conservation"
+  element={<ForestConservation />}
+/>
+<Route
+  path="/community-landscape"
+  element={<CommunityLandscape />}
+/>
 
       <Route element={<AdminProtectedRoute />}>
         <Route path="/admin" element={<Admin />} />
+      
+      
       </Route>
     </Routes>
   );
